@@ -1,0 +1,37 @@
+# Python & Backend
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+*.egg-info/
+venv/
+.venv/
+.env
+backend/.env
+backend/*.db
+backend/*.db-wal
+backend/*.db-shm
+*.db
+*.db-wal
+*.db-shm
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+
+# Generated user/test uploads (preserve seeded sample reels & stitch starter clips)
+backend/uploads/*
+!backend/uploads/reels/
+backend/uploads/reels/*
+!backend/uploads/reels/reel_*.mp4
+!backend/uploads/stitch/
+backend/uploads/stitch/*
+!backend/uploads/stitch/clip_part*.mp4
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

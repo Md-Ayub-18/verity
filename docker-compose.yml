@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: verity-postgres
+    environment:
+      POSTGRES_USER: verity
+      POSTGRES_PASSWORD: verity_password
+      POSTGRES_DB: verity_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - verity_pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: verity-redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  verity_pgdata:
+
