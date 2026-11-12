@@ -1,7 +1,18 @@
 const rawApiUrl = (import.meta.env.VITE_API_URL || '').trim().replace(/\/$/, '');
-export const BACKEND_ORIGIN = rawApiUrl
-  ? (/^https?:\/\//i.test(rawApiUrl) ? rawApiUrl : `https://${rawApiUrl}`)
-  : '';
+
+function normalizeBackendOrigin(val) {
+  if (!val) return '';
+  const hasProto = /^https?:\/\//i.test(val);
+  const proto = hasProto ? val.match(/^https?:\/\//i)[0] : 'https://';
+  let hostPart = val.replace(/^https?:\/\//i, '').split('/')[0];
+  // Render Blueprint fromService (property: host) injects slug without .onrender.com
+  if (hostPart && !hostPart.includes('.') && !hostPart.startsWith('localhost')) {
+    hostPart = `${hostPart}.onrender.com`;
+  }
+  return `${proto}${hostPart}`;
+}
+
+export const BACKEND_ORIGIN = normalizeBackendOrigin(rawApiUrl);
 const API_BASE = `${BACKEND_ORIGIN}/api/v1`;
 
 function resolveUploadsInData(value) {
@@ -36,7 +47,7 @@ export async function request(endpoint, options = {}) {
   }
 
   const controller = new AbortController();
-  const timeoutMs = options.timeoutMs || 15000;
+  const timeoutMs = options.timeoutMs || 60000;
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   let response;
