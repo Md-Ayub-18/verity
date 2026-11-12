@@ -1,4 +1,5 @@
 import os
+import time
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -38,15 +39,25 @@ def _ensure_schema_columns():
             with engine.begin() as conn:
                 conn.execute(text("ALTER TABLE reels ADD COLUMN views_count INTEGER DEFAULT 0"))
 
-_ensure_schema_columns()
+def _init_database_with_retry(max_attempts: int = 5, delay_seconds: float = 2.0):
+    last_err = None
+    for attempt in range(1, max_attempts + 1):
+        try:
+            _ensure_schema_columns()
+            Base.metadata.create_all(bind=engine)
+            _db = SessionLocal()
+            try:
+                seed_database(_db)
+            finally:
+                _db.close()
+            return
+        except Exception as exc:
+            last_err = exc
+            if attempt < max_attempts:
+                time.sleep(delay_seconds)
+    raise last_err
 
-# Initialize tables & seed demo data on app load
-Base.metadata.create_all(bind=engine)
-_db = SessionLocal()
-try:
-    seed_database(_db)
-finally:
-    _db.close()
+_init_database_with_retry()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,

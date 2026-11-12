@@ -1,4 +1,5 @@
 import os
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
@@ -8,9 +9,15 @@ class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
     
-    # Database: Supports PostgreSQL (normalizing postgres:// -> postgresql://) or fallback to SQLite
-    _raw_db_url: str = os.getenv("DATABASE_URL", "sqlite:///./verity.db")
-    DATABASE_URL: str = _raw_db_url.replace("postgres://", "postgresql://", 1) if _raw_db_url.startswith("postgres://") else _raw_db_url
+    # Database: Supports PostgreSQL or fallback to SQLite
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./verity.db")
+
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def _normalize_db_url(cls, v: str) -> str:
+        if isinstance(v, str) and v.startswith("postgres://"):
+            return v.replace("postgres://", "postgresql://", 1)
+        return v
     
     # Security
     SECRET_KEY: str = os.getenv("SECRET_KEY", "verity_super_secret_jwt_key_responsibly_built_2026")

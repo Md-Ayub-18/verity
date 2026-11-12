@@ -371,9 +371,12 @@ def seed_database(db: Session):
         }
     ]
 
+    seeded_posts = []
     for p_data in posts_data:
         p = Post(**p_data)
         db.add(p)
+        seeded_posts.append(p)
+    db.flush()  # Assign primary keys on PostgreSQL before referencing Post.id in Reports
 
     # 6. Stories (Stories tray at top)
     stories_data = [
@@ -492,9 +495,10 @@ def seed_database(db: Session):
     db.add_all([contrib1, contrib2, contrib3])
 
     # 9. Moderation Reports & Bot Signals for Dashboard
+    flagged_post_id = seeded_posts[-1].id if seeded_posts else None
     rep1 = Report(
         reporter_id=giri.id,
-        post_id=9, # The crypto spam post
+        post_id=flagged_post_id, # The crypto spam post
         reported_user_id=marcus.id,
         reason="spam",
         description="Repetitive deceptive crypto payout link detected on user feed.",
