@@ -40,3 +40,4 @@ services:
           type: web
           name: verity-backend
           property: host
+
